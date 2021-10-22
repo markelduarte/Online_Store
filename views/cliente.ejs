@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Loja-virtual</title>
+
+    <!-- BOOTSTRAP -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- PRODUTOS CADASTRADOS -->
+         <div class="row">
+            <div class="col-md-12">
+
+                <br>
+
+                <!-- MENSAGEM COM NUMERO DO PEDIDO -->
+                <div id="mensagem"></div>
+
+                <br>
+
+                <!-- Consultar Pedido -->
+                <h2>Consultar Pedido</h2>
+                <br>
+                <form class="form-inline" action="/consulta-pedido" method="GET">
+                    <div class="form-group">
+                        <label>Nº do pedido</label>
+                        <input type="text" class="form-control" placeholder="Nº do pedido" name="numero_pedido">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Consultar pedido</button>
+                </form>
+
+                <hr>
+
+                <h2>Qual produto deseja comprar ?</h2>
+                <br>
+                <table class="table table-bordered" id="tabela">
+                    <thead>
+                        <tr>
+                            <td></td>
+                            <td>Nome</td>
+                            <td>Descrição</td>
+                            <td>Preço</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% produtos.forEach(function(produto, index) {%>
+                            <tr>
+                                <td>
+                                    <input class="item_selecionado" type="checkbox" value="<%- produto._id %>">
+                                </td>
+                                <td class="nome"><%- produto.nome %></td>
+                                <td class="descricao"><%- produto.descricao %></td>
+                                <td class="preco"><%- produto.preco %></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+                <p id="total"></p>
+                <hr>
+                <button class="btn btn-primary" id="finalizar-pedido">Finalizar Pedido</button>
+
+                <hr>
+
+                <a href="/">Pagina Inicial</a>
+
+            </div>
+        </div>
+        <!-- ./PRODUTOS CADASTRADOS -->
+    </div>
+
+    <script>
+        $(document).ready(function(){
+
+            // lista de produtos selecionados
+            var produtosSelecionados = [];
+
+            // total de produtos selecionados
+            var total = 0.0;
+
+            // funcao construtora do objeto produto
+            function Produto(id, nome, descricao, preco){
+                this.id = id;
+                this.nome = nome;
+                this.descricao = descricao;
+                this.preco = preco;
+            }
+
+            // cria produto com as informações da tabela
+            function cria_produto(id, tr){
+                var nome = $(tr).find('.nome').html();
+                var descricao = $(tr).find('.descricao').html();
+                var preco = $(tr).find('.preco').html();
+
+                return new Produto(id, nome, descricao, parseFloat(preco));
+            }
+
+            // adiciona produto na lista de produtos selecionados
+            function adiciona_produto(produto){
+                produtosSelecionados.push(produto);
+
+                total += produto.preco;
+                atualiza_total();
+            }
+
+            // remove produto da lista de produtos selecionados
+            function remove_produto(id){
+                 produtosSelecionados.forEach(function(produto, index){
+                    if(produto.id == id){
+                        produtosSelecionados.splice(index, 1);
+                        total -= produto.preco;
+                        atualiza_total();
+                    }
+                    return;
+                });
+            }
+
+            // atualiza total da tabela;
+            function atualiza_total(){
+                $('#total').text('Total: R$ ' + total);
+            }
+
+            $('.item_selecionado').change(function(){
+
+                var checkbox = $(this);
+                var checkboxSelecionado = checkbox.is(':checked');
+                var id = checkbox.val();
+
+                // verifica estado do checkbox
+                if(checkboxSelecionado){
+                    var tr = checkbox.closest('tr');
+                    var produto = cria_produto(id, tr);
+                    adiciona_produto(produto);
+                }else{
+                   remove_produto(id);
+                }
+
+            });
+
+            $('#finalizar-pedido').click(function(){
+                if(produtosSelecionados.length > 0){
+                    // Envia requisição para o servidor
+                    $.ajax({
+                        url: '/cria-pedido',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            produtos: produtosSelecionados
+                        })
+                    }).done(function(resposta){
+                        //adiciona mensagem na tela
+                        $('#mensagem').prepend(
+                            '<div class="alert alert-success" role="alert">' +
+                            '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                            '<span aria-hidden="true">&times;</span>' +
+                            '</button>' +
+                            '<span>Seu número de pedido é <strong>' + resposta.numeroPedido + '</strong> (Consulte seu pedido atraves deste número)</span>' +
+                            '</div>');
+                        $('.item_selecionado').prop('checked', false);
+                    });
+                    produtosSelecionados = [];
+                    $(window).scrollTop(0);
+                    
+                }else{
+                    alert('Nenhum produto foi selecionado');
+                }
+            });
+
+            atualiza_total();
+
+        });
+    </script>
+
+</body>
+
+</html>

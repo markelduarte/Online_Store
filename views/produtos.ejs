@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Loja-virtual</title>
+
+    <!-- BOOTSTRAP -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- FORMULARIO CADASTRO -->
+        <div class="row">
+            <div class="col-md-6">
+
+                <h2>Formulario de Cadastro</h2>
+                <form action="/admin/cadastro" method="post">
+                    <div class="form-group">
+                        <label>Nome:</label>
+                        <input class="form-control" type="text" placeholder="Nome" name="nome">
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição:</label>
+                        <textarea class="form-control" cols="10" rows="5" name="descricao"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Preço:</label>
+                        <input class="form-control" type="text" placeholder="Preço" name="preco">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </form>
+            </div>
+        </div> 
+        <!-- ./FORMULARIO CADASTRO -->
+
+        <hr>
+
+
+        <!-- PRODUTOS CADASTRADOS -->
+         <div class="row">
+            <div class="col-md-12">
+                <h2>Produtos Cadastrados</h2>
+                <table class="table table-bordered" id="tabela">
+                    <thead>
+                        <tr>
+                            <td>Nome</td>
+                            <td>Descrição</td>
+                            <td>Preço</td>
+                            <td>Remover</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% produtos.forEach(function(produto, index) {%>
+                            <tr>
+                                <td><%- produto.nome %></td>
+                                <td><%- produto.descricao %></td>
+                                <td><%- produto.preco %></td>
+                                <td>
+                                    <a href="/admin/remove/<%- produto._id %>">Remover</a>
+                                </td>
+                                <% }) %>
+                            </tr>
+                    </tbody>
+                </table>
+                <span id="total"></span>
+                <hr>
+                <a href="/">Pagina Inicial</a> /
+                <a href="/admin/pedidos-cadastrados">Pedidos cadastrados</a>
+            </div>
+        </div>
+        <!-- ./PRODUTOS CADASTRADOS -->
+    </div>
+
+</body>
+
+</html>
